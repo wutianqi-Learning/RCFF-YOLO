@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "maize-rpg-freqfusion"
+version = "0.1.0"
+description = "YOLO11 with independent row conditioning and frequency-aware fusion for maize seedling detection"
+readme = "README.md"
+requires-python = ">=3.11,<3.12"
+dependencies = [
+    "torch==2.1.0", "torchvision==0.16.0", "numpy==1.26.4",
+    "Pillow==11.3.0", "PyYAML==6.0.2", "ultralytics==8.3.160",
+    "mmengine==0.10.5", "pycocotools==2.0.11", "opencv-python==4.10.0.84"
+]
+
+[project.scripts]
+maize-detect = "maize_detector.__main__:main"
+
+[tool.setuptools]
+license-files = ["licenses/*"]
+
+[tool.setuptools.packages.find]
+include = ["maize_detector*"]

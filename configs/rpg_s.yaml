@@ -1,0 +1,24 @@
+model:
+  name: ours
+  scale: s
+  rpg: true
+  fusion: false
+seed: 110022893
+image_size: 1280
+loss:
+  box: 7.5
+  cls: 0.5
+  dfl: 1.5
+training:
+  epochs: 100
+  batch_size: 1
+  accumulation: 8
+  learning_rate: 0.0003
+  weight_decay: 0.0001
+  warmup_epochs: 3
+  final_lr_factor: 0.01
+  clip_norm: 10.0
+  precision: bf16
+  horizontal_flip: 0.5
+  workers: 2
+  cpu_threads: 4

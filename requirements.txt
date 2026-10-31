@@ -1,0 +1,8 @@
+numpy==1.26.4
+Pillow==11.3.0
+PyYAML==6.0.2
+ultralytics==8.3.160
+mmengine==0.10.5
+pycocotools==2.0.11
+opencv-python==4.10.0.84
+# Install torch/torchvision and CUDA-enabled mmcv separately as described in README.md.

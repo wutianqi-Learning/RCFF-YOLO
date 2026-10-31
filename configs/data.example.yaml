@@ -1,0 +1,4 @@
+# Paths are resolved relative to the directory where the command is run.
+image_root: data/maizehorizon/images
+train: data/maizehorizon/annotations/train.json
+validation: data/maizehorizon/annotations/validation.json
