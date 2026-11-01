@@ -1,8 +1,10 @@
-# 基于 RPG 与 FreqFusion 的玉米幼苗检测
+# RCFF-YOLO
 
 [English](README.md)
 
-本仓库提供用于农机前视玉米幼苗检测的 **Ours-n** 和 **Ours-s**。模型以 YOLO11 为基础，采用 RPG 调节进入检测头的多尺度特征，通过 FreqFusion 增强颈部特征。两个条件网络具有独立参数，分别控制特征增益与频率特征的残差混合。最终模型保留可学习坐标重采样。
+RCFF-YOLO 为逐行条件频率融合模型（Row-Conditioned Frequency Fusion YOLO）。对应论文为 *Mitigating Perspective Scale Attenuation and Canopy Aliasing: Row-Conditioned Frequency Fusion for Maize Seedling Detection*。
+
+本仓库提供用于农机前视玉米幼苗检测的 **RCFF-YOLO-n** 和 **RCFF-YOLO-s**。模型以 YOLO11 为基础，采用 RPG 调节进入检测头的多尺度特征，通过 FreqFusion 增强颈部特征。两个条件网络具有独立参数，分别控制特征增益与频率特征的残差混合。最终模型保留可学习坐标重采样。
 
 仓库包含模型、训练、评估、单图推理、配置文件和测试。数据集与训练权重需要单独准备。
 
@@ -36,13 +38,13 @@ python scripts/smoke_model.py --scale n --device cuda:0
 cp configs/data.example.yaml configs/data.local.yaml
 ```
 
-在本地配置中填写图像根目录、训练标注和验证标注路径。将官方 COCO 预训练权重放入 `weights/`。Ours-s 使用 `yolo11s.pt`，Ours-n 使用 `yolo11n.pt`。
+在本地配置中填写图像根目录、训练标注和验证标注路径。将官方 COCO 预训练权重放入 `weights/`。RCFF-YOLO-s 使用 `yolo11s.pt`，RCFF-YOLO-n 使用 `yolo11n.pt`。
 
 ```bash
 python -m maize_detector train \
-  --config configs/ours_s.yaml --data configs/data.local.yaml \
+  --config configs/rcff_yolo_s.yaml --data configs/data.local.yaml \
   --pretrained weights/yolo11s.pt \
-  --output outputs/ours_s_r1 --device cuda:0
+  --output outputs/rcff_yolo_s_r1 --device cuda:0
 ```
 
 训练配置为 100 轮、1280 × 1280 输入、AdamW 优化器、峰值学习率 0.0003 和权重衰减 0.0001。前三轮预热，随后余弦衰减。物理批量为 1，通过 8 次梯度累积形成有效批量 8。损失平衡因子为 box 7.5、cls 0.5 和 dfl 1.5。
@@ -53,9 +55,9 @@ python -m maize_detector train \
 
 ```bash
 python -m maize_detector train \
-  --config configs/ours_s.yaml --data configs/data.local.yaml \
-  --resume outputs/ours_s_r1/last.pt \
-  --output outputs/ours_s_r1 --device cuda:0
+  --config configs/rcff_yolo_s.yaml --data configs/data.local.yaml \
+  --resume outputs/rcff_yolo_s_r1/last.pt \
+  --output outputs/rcff_yolo_s_r1 --device cuda:0
 ```
 
 恢复时保持配置、数据路径、随机初始化状态和输出目录一致。
@@ -64,17 +66,17 @@ python -m maize_detector train \
 
 ```bash
 python -m maize_detector evaluate \
-  --config configs/ours_s.yaml --weights outputs/ours_s_r1/best.pt \
+  --config configs/rcff_yolo_s.yaml --weights outputs/rcff_yolo_s_r1/best.pt \
   --annotations data/maizehorizon/annotations/test.json \
   --image-root data/maizehorizon/images \
-  --output outputs/ours_s_r1/test --device cuda:0
+  --output outputs/rcff_yolo_s_r1/test --device cuda:0
 ```
 
 输出包括指标与预测 JSON。AP 按 COCO 协议计算。P、R 采用置信度 0.25 和 IoU 0.50，NMS 的 IoU 阈值为 0.70。JSON 指标为小数，转为百分数时乘以 100。三次训练分别评估，再计算均值和样本标准差。
 
 ```bash
 python -m maize_detector predict \
-  --config configs/ours_s.yaml --weights outputs/ours_s_r1/best.pt \
+  --config configs/rcff_yolo_s.yaml --weights outputs/rcff_yolo_s_r1/best.pt \
   --image data/example.jpg --output outputs/example --device cuda:0
 ```
 

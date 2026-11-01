@@ -1,8 +1,10 @@
-# Maize seedling detection with RPG and FreqFusion
+# RCFF-YOLO
 
 [中文说明](README_zh.md)
 
-This repository implements **Ours-n** and **Ours-s**, YOLO11 detectors for maize seedlings in forward-looking agricultural imagery. Row-wise Pyramid Gain (RPG) reweights the detection-scale features. Frequency-aware Feature Fusion (FreqFusion) refines the high-resolution neck features. Two independently parameterized row conditioners control these operations.
+Implementation of **Row-Conditioned Frequency Fusion** for the paper *Mitigating Perspective Scale Attenuation and Canopy Aliasing: Row-Conditioned Frequency Fusion for Maize Seedling Detection*.
+
+This repository implements **RCFF-YOLO-n** and **RCFF-YOLO-s**, YOLO11 detectors for maize seedlings in forward-looking agricultural imagery. Row-wise Pyramid Gain (RPG) reweights the detection-scale features. Frequency-aware Feature Fusion (FreqFusion) refines the high-resolution neck features. Two independently parameterized row conditioners control these operations.
 
 The release contains the model, training loop, evaluation code, inference commands and configurations. Datasets and trained weights are supplied separately.
 
@@ -65,12 +67,12 @@ Place official COCO-pretrained `yolo11s.pt` and `yolo11n.pt` files in `weights/`
 
 ```bash
 python -m maize_detector train \
-  --config configs/ours_s.yaml --data configs/data.local.yaml \
+  --config configs/rcff_yolo_s.yaml --data configs/data.local.yaml \
   --pretrained weights/yolo11s.pt \
-  --output outputs/ours_s_r1 --device cuda:0
+  --output outputs/rcff_yolo_s_r1 --device cuda:0
 ```
 
-For Ours-n, use `configs/ours_n.yaml`, `weights/yolo11n.pt` and a separate output directory. Each run uses one GPU. Independent runs can be assigned to different GPUs through `--device` or `CUDA_VISIBLE_DEVICES`.
+For RCFF-YOLO-n, use `configs/rcff_yolo_n.yaml`, `weights/yolo11n.pt` and a separate output directory. Each run uses one GPU. Independent runs can be assigned to different GPUs through `--device` or `CUDA_VISIBLE_DEVICES`.
 
 | Setting | Value |
 | --- | --- |
@@ -93,9 +95,9 @@ Three independent runs use the following initialization states. Each run loads t
 ```bash
 for seed in 110022893 1970871798 1114612310; do
   python -m maize_detector train \
-    --config configs/ours_s.yaml --data configs/data.local.yaml \
+    --config configs/rcff_yolo_s.yaml --data configs/data.local.yaml \
     --pretrained weights/yolo11s.pt --seed "$seed" \
-    --output "outputs/ours_s_${seed}" --device cuda:0
+    --output "outputs/rcff_yolo_s_${seed}" --device cuda:0
 done
 ```
 
@@ -103,9 +105,9 @@ Resume an interrupted run from a checkpoint created by this release.
 
 ```bash
 python -m maize_detector train \
-  --config configs/ours_s.yaml --data configs/data.local.yaml \
-  --resume outputs/ours_s_r1/last.pt \
-  --output outputs/ours_s_r1 --device cuda:0
+  --config configs/rcff_yolo_s.yaml --data configs/data.local.yaml \
+  --resume outputs/rcff_yolo_s_r1/last.pt \
+  --output outputs/rcff_yolo_s_r1 --device cuda:0
 ```
 
 Keep the configuration, data paths, output directory and seed unchanged when resuming. Load checkpoints only from trusted sources.
@@ -116,10 +118,10 @@ Evaluate a fixed checkpoint on a validation or test split.
 
 ```bash
 python -m maize_detector evaluate \
-  --config configs/ours_s.yaml --weights outputs/ours_s_r1/best.pt \
+  --config configs/rcff_yolo_s.yaml --weights outputs/rcff_yolo_s_r1/best.pt \
   --annotations data/maizehorizon/annotations/test.json \
   --image-root data/maizehorizon/images \
-  --output outputs/ours_s_r1/test --device cuda:0
+  --output outputs/rcff_yolo_s_r1/test --device cuda:0
 ```
 
 The command writes `predictions.json` and `metrics.json`. AP uses `pycocotools` at IoU thresholds 0.50–0.95, a confidence floor of 0.001 and at most 100 detections per image. P/R use confidence 0.25 and IoU 0.50. NMS uses IoU 0.70. Ignore regions follow the crowd/overlap rules in the data guide.
@@ -128,16 +130,16 @@ JSON metrics are fractions; multiply by 100 for percentages. Evaluate all three 
 
 ```bash
 python scripts/summarize_runs.py \
-  outputs/ours_s_110022893/test/metrics.json \
-  outputs/ours_s_1970871798/test/metrics.json \
-  outputs/ours_s_1114612310/test/metrics.json
+  outputs/rcff_yolo_s_110022893/test/metrics.json \
+  outputs/rcff_yolo_s_1970871798/test/metrics.json \
+  outputs/rcff_yolo_s_1114612310/test/metrics.json
 ```
 
 ## Image inference
 
 ```bash
 python -m maize_detector predict \
-  --config configs/ours_s.yaml --weights outputs/ours_s_r1/best.pt \
+  --config configs/rcff_yolo_s.yaml --weights outputs/rcff_yolo_s_r1/best.pt \
   --image data/example.jpg --output outputs/example --device cuda:0
 ```
 
@@ -150,7 +152,7 @@ This saves a box visualization and COCO-format predictions. The display threshol
 | `baseline_n.yaml`, `baseline_s.yaml` | No | No |
 | `rpg_n.yaml`, `rpg_s.yaml` | Yes | No |
 | `freqfusion_n.yaml`, `freqfusion_s.yaml` | No | Yes |
-| `ours_n.yaml`, `ours_s.yaml` | Yes | Yes, independent neck parameters |
+| `rcff_yolo_n.yaml`, `rcff_yolo_s.yaml` | Yes | Yes, independent neck parameters |
 
 All supplied configurations use the same 100-epoch recipe. Historical ablation budgets and alternative architectures are not reproduced by selecting these files alone. Change the `loss` fields to study loss balance factors while holding data splits and the training budget fixed.
 
@@ -171,7 +173,7 @@ All supplied configurations use the same 100-epoch recipe. Historical ablation b
 
 - **CARAFE or `mmcv._ext` import fails.** Install CUDA-enabled MMCV matching PyTorch 2.1 and CUDA 11.8. Remove `mmcv-lite` if both variants are installed.
 - **FreqFusion source is missing.** Run `python scripts/fetch_freqfusion.py`. For another installation location, set `FREQFUSION_SOURCE` to the verified source file.
-- **Checkpoint keys differ.** Use the matching scale and module configuration. The final Ours-n/Ours-s tensor key layout is preserved. Other historical architectures need their original implementations.
+- **Checkpoint keys differ.** Use the matching scale and module configuration. The final RCFF-YOLO-n/RCFF-YOLO-s tensor key layout is preserved. Other historical architectures need their original implementations.
 - **GPU memory is insufficient.** Run one experiment per GPU and keep the physical batch at one. Changing resolution or accumulation changes the supplied experiment configuration.
 
 ## Acknowledgments

@@ -138,7 +138,7 @@ class YoloDetector(torch.nn.Module):
 
 
 class MaizeDetector(YoloDetector):
-    """Ours-n and Ours-s; the head and neck have separate conditioners."""
+    """RCFF-YOLO-n and RCFF-YOLO-s; the head and neck have separate conditioners."""
 
     def __init__(self, scale='s', seed=0, gains=None, *, rpg=True, fusion=True):
         if scale not in ('n', 's'):

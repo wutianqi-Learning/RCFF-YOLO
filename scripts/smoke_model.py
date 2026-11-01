@@ -1,4 +1,4 @@
-"""Run a small CUDA forward/backward check for Ours-n or Ours-s."""
+"""Run a small CUDA forward/backward check for RCFF-YOLO-n or RCFF-YOLO-s."""
 import argparse
 import torch
 from maize_detector.model import MaizeDetector
