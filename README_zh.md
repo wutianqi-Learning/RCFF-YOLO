@@ -13,6 +13,8 @@ RCFF-YOLO 为逐行条件频率融合模型（Row-Conditioned Frequency Fusion Y
 参考环境为 Linux、Python 3.11、PyTorch 2.1.0、CUDA 11.8、Ultralytics 8.3.160 和 MMCV 2.1.0。FreqFusion 需要带 CUDA CARAFE 算子的 MMCV。
 
 ```bash
+git clone https://github.com/wutianqi-Learning/RCFF-YOLO.git
+cd RCFF-YOLO
 python3.11 -m venv .venv
 source .venv/bin/activate
 python -m pip install --upgrade pip

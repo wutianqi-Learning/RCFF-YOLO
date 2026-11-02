@@ -29,6 +29,8 @@ Use Linux, Python 3.11 and an NVIDIA CUDA GPU. The reference environment uses Py
 Run these commands from the repository root in a new environment.
 
 ```bash
+git clone https://github.com/wutianqi-Learning/RCFF-YOLO.git
+cd RCFF-YOLO
 python3.11 -m venv .venv
 source .venv/bin/activate
 python -m pip install --upgrade pip
